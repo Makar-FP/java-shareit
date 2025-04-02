@@ -5,24 +5,22 @@ import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Repository
 public class InMemoryUserStorage implements UserStorage {
 
-    private final Map<Long, User> users = new ConcurrentHashMap<>();
-    private final AtomicLong nextId = new AtomicLong(1);
+    private final Map<Long, User> users = new HashMap<>();
+    private Long nextId = 0L;
 
     @Override
-    public synchronized User create(User user) {
-        user.setId(nextId.getAndIncrement());
+    public User create(User user) {
+        user.setId(genNextId());
         users.put(user.getId(), user);
         return user;
     }
 
     @Override
-    public synchronized User update(User user) {
+    public User update(User user) {
         if (!users.containsKey(user.getId())) {
             throw new NotFoundException("User was not found");
         }
@@ -40,7 +38,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public synchronized void delete(Long userId) {
+    public void delete(Long userId) {
         if (!users.containsKey(userId)) {
             throw new NotFoundException("User was not found");
         }
@@ -55,5 +53,9 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public Optional<User> findById(Long userId) {
         return Optional.ofNullable(users.get(userId));
+    }
+
+    private Long genNextId() {
+        return nextId++;
     }
 }
