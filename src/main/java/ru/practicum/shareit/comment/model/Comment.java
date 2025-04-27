@@ -1,30 +1,34 @@
-package ru.practicum.shareit.request.model;
+package ru.practicum.shareit.comment.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "requests")
-@NoArgsConstructor
+@Table(name = "comments")
 @Data
-public class ItemRequest {
+@NoArgsConstructor
+public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     @Column
-    String description;
-
-    @Column
-    LocalDateTime created;
+    String text;
 
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
     User owner;
 
+    @ManyToOne
+    @JoinColumn(name = "item_id", nullable = false)
+    Item item;
+
+    @Column
+    LocalDateTime created;
 }

@@ -1,28 +1,34 @@
 package ru.practicum.shareit.item;
 
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.comment.dto.CommentDtoRequest;
+import ru.practicum.shareit.comment.dto.CommentDtoResponse;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.List;
 
-/**
- * TODO Sprint add-controllers.
- */
 @RestController
 @RequestMapping("/items")
+@RequiredArgsConstructor
 public class ItemController {
     private final ItemService itemService;
-
-    public ItemController(ItemService itemService) {
-        this.itemService = itemService;
-    }
 
     @PostMapping
     public ResponseEntity<ItemDto> create(@RequestHeader("X-Sharer-User-Id") Long userId,
                                           @RequestBody ItemDto itemDto) {
         return ResponseEntity.ok(itemService.create(itemDto, userId));
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public ResponseEntity<CommentDtoResponse> addComment(@Valid @RequestBody CommentDtoRequest dto,
+                                                         @PathVariable Long itemId,
+                                                         @RequestHeader("X-Sharer-User-Id") Long userId) {
+        CommentDtoResponse response = itemService.addComment(dto, itemId, userId);
+        return ResponseEntity.ok(response);
     }
 
     @PatchMapping("/{itemId}")
@@ -33,13 +39,15 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ResponseEntity<ItemDto> getById(@PathVariable Long itemId) {
-        return ResponseEntity.ok(itemService.getById(itemId));
+    public ResponseEntity<ItemDto> findById(
+            @PathVariable Long itemId,
+            @RequestHeader("X-Sharer-User-Id") Long userId) {
+        return ResponseEntity.ok(itemService.findById(itemId, userId));
     }
 
     @GetMapping
-    public ResponseEntity<List<ItemDto>> getAllByUser(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        return ResponseEntity.ok(itemService.getAllByUser(userId));
+    public ResponseEntity<List<ItemDto>> findByUserId(@RequestHeader("X-Sharer-User-Id") Long userId) {
+        return ResponseEntity.ok(itemService.findByUserId(userId));
     }
 
     @GetMapping("/search")
