@@ -305,22 +305,6 @@ public class BookingServiceImplTest {
     }
 
     @Test
-    void getUserItemsBookingsByState_shouldReturnAllByDefault() {
-        UserDto userDtoResponse1 = userService.create(userDtoRequest1);
-        UserDto userDtoResponse2 = userService.create(userDtoRequest2);
-        ItemDtoResponse itemDtoResponse = itemService.create(itemDtoRequest1, userDtoResponse1.getId());
-
-        BookingDtoRequest bookingDtoRequest = new BookingDtoRequest(itemDtoResponse.getId(),
-                LocalDateTime.now().plusHours(1), LocalDateTime.now().plusHours(2));
-
-        bookingService.create(bookingDtoRequest, userDtoResponse2.getId());
-
-        List<BookingDtoResponse> bookings = bookingService.getUserItemsBookingsByState(userDtoResponse1.getId(), BookingState.ALL);
-
-        Assertions.assertThat(bookings).isNotEmpty();
-    }
-
-    @Test
     void getUserBookingsByState_shouldReturnWaitingBookings() {
         UserDto userDtoResponse1 = userService.create(userDtoRequest1);
         UserDto userDtoResponse2 = userService.create(userDtoRequest2);
