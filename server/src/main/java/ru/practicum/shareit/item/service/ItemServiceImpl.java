@@ -61,7 +61,7 @@ public class ItemServiceImpl implements ItemService {
         Item item = getItemOrThrow(itemId);
 
         LocalDateTime now = LocalDateTime.now();
-        // LocalDateTime plusThreeHours = now.plusHours(3);
+
         List<Booking> bookings = bookingStorage.findAllByBookerIdAndItemIdAndEndBeforeOrderByStartDesc(userId, itemId, now);
 
         if (bookings.isEmpty()) {
