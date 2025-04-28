@@ -18,7 +18,6 @@ import ru.practicum.shareit.booking.dto.BookingDtoResponse;
 import ru.practicum.shareit.booking.model.enums.BookingState;
 import ru.practicum.shareit.booking.model.enums.BookingStatus;
 import ru.practicum.shareit.booking.service.BookingService;
-import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
