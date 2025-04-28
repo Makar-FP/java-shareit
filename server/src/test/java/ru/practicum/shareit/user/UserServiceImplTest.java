@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.ShareItApp;
 import ru.practicum.shareit.exception.ConflictException;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
@@ -124,5 +125,41 @@ public class UserServiceImplTest {
         List<UserDto> users = userService.findAll();
 
         Assertions.assertThat(users).hasSize(2);
+    }
+
+    @Test
+    void create_shouldThrowValidationException_whenEmailIsNull() {
+        userDtoRequest1.setEmail(null);
+
+        Assertions.assertThatThrownBy(() -> userService.create(userDtoRequest1))
+                .isInstanceOf(ValidationException.class)
+                .hasMessageContaining("Email cannot be null or empty");
+    }
+
+    @Test
+    void create_shouldThrowValidationException_whenEmailIsBlank() {
+        userDtoRequest1.setEmail("  ");
+
+        Assertions.assertThatThrownBy(() -> userService.create(userDtoRequest1))
+                .isInstanceOf(ValidationException.class)
+                .hasMessageContaining("Email cannot be null or empty");
+    }
+
+    @Test
+    void create_shouldThrowValidationException_whenEmailFormatIsInvalid() {
+        userDtoRequest1.setEmail("invalid-email");
+
+        Assertions.assertThatThrownBy(() -> userService.create(userDtoRequest1))
+                .isInstanceOf(ValidationException.class)
+                .hasMessageContaining("Invalid email format");
+    }
+
+    @Test
+    void update_shouldThrowValidationException_whenUserIdIsNull() {
+        UserDto updateDto = new UserDto(null, "TestName", "test@test.com");
+
+        Assertions.assertThatThrownBy(() -> userService.update(updateDto, null))
+                .isInstanceOf(ValidationException.class)
+                .hasMessageContaining("Id must be specified");
     }
 }

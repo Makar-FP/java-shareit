@@ -14,8 +14,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserServiceImpl;
 
+import java.util.Collections;
 import java.util.List;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
@@ -68,6 +70,13 @@ class UserControllerTest {
     }
 
     @Test
+    void create_shouldReturnBadRequest_whenBodyIsEmpty() throws Exception {
+        mvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void update_shouldUpdateUser() throws Exception {
         when(userService.update(any(), anyLong()))
                 .thenReturn(userDto);
@@ -79,6 +88,13 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("test"))
                 .andExpect(jsonPath("$.email").value("test@test.com"));
+    }
+
+    @Test
+    void update_shouldReturnBadRequest_whenBodyIsEmpty() throws Exception {
+        mvc.perform(patch("/users/1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -110,16 +126,22 @@ class UserControllerTest {
                 .thenReturn(List.of(userDto));
 
         mvc.perform(get("/users")
-                        .content(mapper.writeValueAsString(userDto))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect((result -> {
-                    String json = result.getResponse().getContentAsString();
-                    List<UserDto> dtos = mapper.readValue(json, new TypeReference<>() {
-                    });
-                    if (dtos.isEmpty()) {
-                        throw new AssertionError("Empty UserDto list");
-                    }
-                }));
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].name").value("test"))
+                .andExpect(jsonPath("$[0].email").value("test@test.com"));
+    }
+
+    @Test
+    void findAll_shouldReturnEmptyList_whenNoUsers() throws Exception {
+        when(userService.findAll())
+                .thenReturn(Collections.emptyList());
+
+        mvc.perform(get("/users")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
     }
 }
