@@ -18,6 +18,7 @@ import ru.practicum.shareit.booking.dto.BookingDtoResponse;
 import ru.practicum.shareit.booking.model.enums.BookingState;
 import ru.practicum.shareit.booking.model.enums.BookingStatus;
 import ru.practicum.shareit.booking.service.BookingService;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
@@ -201,5 +202,32 @@ class BookingControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(responseDto.getId()));
+    }
+
+    @Test
+    void getUserBookingsByState_shouldReturnBadRequest_whenStateIsInvalid() throws Exception {
+        mvc.perform(get("/bookings")
+                        .param("state", "UNKNOWN")
+                        .header("X-Sharer-User-Id", user.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getUserItemsBookingsByState_shouldReturnBadRequest_whenStateIsInvalid() throws Exception {
+        mvc.perform(get("/bookings/owner")
+                        .param("state", "INVALID_STATE")
+                        .header("X-Sharer-User-Id", user.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void update_shouldReturnBadRequest_whenApprovedParamIsInvalid() throws Exception {
+        mvc.perform(patch("/bookings/{bookingId}", 1)
+                        .param("approved", "maybe")
+                        .header("X-Sharer-User-Id", user.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 }

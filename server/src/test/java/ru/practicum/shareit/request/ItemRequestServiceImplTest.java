@@ -121,4 +121,19 @@ public class ItemRequestServiceImplTest {
                 .isInstanceOf(NotFoundException.class);
     }
 
+    @Test
+    void findAllRequests_shouldReturnEmptyListIfNoOtherRequests() {
+        UserDto userDto = userService.create(userDtoRequest1);
+        List<ItemRequestDtoResponse> requests = itemRequestService.findAllRequests(userDto.getId());
+
+        Assertions.assertThat(requests).isEmpty();
+    }
+
+    @Test
+    void findUserRequests_shouldReturnEmptyListIfNoRequests() {
+        UserDto userDto = userService.create(userDtoRequest1);
+        List<ItemRequestDtoResponse> requests = itemRequestService.findUserRequests(userDto.getId());
+
+        Assertions.assertThat(requests).isEmpty();
+    }
 }

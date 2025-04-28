@@ -124,4 +124,33 @@ public class ItemRequestControllerTest {
                     }
                 }));
     }
+
+    @Test
+    void create_shouldReturnBadRequest_whenNoUserIdHeader() throws Exception {
+        mvc.perform(post("/requests")
+                        .content(mapper.writeValueAsString(dtoRequest))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void findUserRequests_shouldReturnBadRequest_whenNoUserIdHeader() throws Exception {
+        mvc.perform(get("/requests")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void findAllRequests_shouldReturnBadRequest_whenNoUserIdHeader() throws Exception {
+        mvc.perform(get("/requests/all")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void findRequestById_shouldReturnBadRequest_whenNoUserIdHeader() throws Exception {
+        mvc.perform(get("/requests/" + dtoResponse.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
 }

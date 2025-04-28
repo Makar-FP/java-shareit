@@ -288,6 +288,70 @@ public class BookingServiceImplTest {
                 bookingService.getUserItemsBookingsByState(1L, BookingState.ALL)).isInstanceOf(NotFoundException.class);
     }
 
+    @Test
+    void getUserBookingsByState_shouldReturnAllByDefault() {
+        UserDto userDtoResponse1 = userService.create(userDtoRequest1);
+        UserDto userDtoResponse2 = userService.create(userDtoRequest2);
+        ItemDtoResponse itemDtoResponse = itemService.create(itemDtoRequest1, userDtoResponse1.getId());
+
+        BookingDtoRequest bookingDtoRequest = new BookingDtoRequest(itemDtoResponse.getId(),
+                LocalDateTime.now().plusHours(1), LocalDateTime.now().plusHours(2));
+
+        bookingService.create(bookingDtoRequest, userDtoResponse2.getId());
+
+        List<BookingDtoResponse> bookings = bookingService.getUserBookingsByState(userDtoResponse2.getId(), BookingState.ALL);
+
+        Assertions.assertThat(bookings).hasSize(1);
+    }
+
+    @Test
+    void getUserItemsBookingsByState_shouldReturnAllByDefault() {
+        UserDto userDtoResponse1 = userService.create(userDtoRequest1);
+        UserDto userDtoResponse2 = userService.create(userDtoRequest2);
+        ItemDtoResponse itemDtoResponse = itemService.create(itemDtoRequest1, userDtoResponse1.getId());
+
+        BookingDtoRequest bookingDtoRequest = new BookingDtoRequest(itemDtoResponse.getId(),
+                LocalDateTime.now().plusHours(1), LocalDateTime.now().plusHours(2));
+
+        bookingService.create(bookingDtoRequest, userDtoResponse2.getId());
+
+        List<BookingDtoResponse> bookings = bookingService.getUserItemsBookingsByState(userDtoResponse1.getId(), BookingState.ALL);
+
+        Assertions.assertThat(bookings).isNotEmpty();
+    }
+
+    @Test
+    void getUserBookingsByState_shouldReturnWaitingBookings() {
+        UserDto userDtoResponse1 = userService.create(userDtoRequest1);
+        UserDto userDtoResponse2 = userService.create(userDtoRequest2);
+        ItemDtoResponse itemDtoResponse = itemService.create(itemDtoRequest1, userDtoResponse1.getId());
+
+        BookingDtoRequest bookingDtoRequest = new BookingDtoRequest(itemDtoResponse.getId(),
+                LocalDateTime.now().plusHours(1), LocalDateTime.now().plusHours(2));
+
+        bookingService.create(bookingDtoRequest, userDtoResponse2.getId());
+
+        List<BookingDtoResponse> bookings = bookingService.getUserBookingsByState(userDtoResponse2.getId(), BookingState.WAITING);
+
+        Assertions.assertThat(bookings).hasSize(1);
+    }
+
+    @Test
+    void getUserBookingsByState_shouldReturnRejectedBookings() {
+        UserDto userDtoResponse1 = userService.create(userDtoRequest1);
+        UserDto userDtoResponse2 = userService.create(userDtoRequest2);
+        ItemDtoResponse itemDtoResponse = itemService.create(itemDtoRequest1, userDtoResponse1.getId());
+
+        BookingDtoRequest bookingDtoRequest = new BookingDtoRequest(itemDtoResponse.getId(),
+                LocalDateTime.now().plusHours(1), LocalDateTime.now().plusHours(2));
+        BookingDtoResponse bookingDtoResponse = bookingService.create(bookingDtoRequest, userDtoResponse2.getId());
+
+        bookingService.update(bookingDtoResponse.getId(), false, userDtoResponse1.getId());
+
+        List<BookingDtoResponse> bookings = bookingService.getUserBookingsByState(userDtoResponse2.getId(), BookingState.REJECTED);
+
+        Assertions.assertThat(bookings).hasSize(1);
+    }
 }
 
 
