@@ -161,4 +161,45 @@ class BookingControllerTest {
                     }
                 });
     }
+
+    @Test
+    void create_shouldReturnBadRequest_whenMissingUserIdHeader() throws Exception {
+        mvc.perform(post("/bookings")
+                        .content(mapper.writeValueAsString(requestDto))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void findById_shouldReturnBadRequest_whenMissingUserIdHeader() throws Exception {
+        mvc.perform(get("/bookings/{bookingId}", responseDto.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getUserBookingsByState_shouldReturnBookings_whenStateDifferentThanAll() throws Exception {
+        when(bookingService.getUserBookingsByState(anyLong(), any(BookingState.class)))
+                .thenReturn(List.of(responseDto));
+
+        mvc.perform(get("/bookings")
+                        .param("state", "CURRENT")
+                        .header("X-Sharer-User-Id", user.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(responseDto.getId()));
+    }
+
+    @Test
+    void getUserItemsBookingsByState_shouldReturnBookings_whenStateDifferentThanAll() throws Exception {
+        when(bookingService.getUserItemsBookingsByState(anyLong(), any(BookingState.class)))
+                .thenReturn(List.of(responseDto));
+
+        mvc.perform(get("/bookings/owner")
+                        .param("state", "FUTURE")
+                        .header("X-Sharer-User-Id", user.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(responseDto.getId()));
+    }
 }

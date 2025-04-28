@@ -202,4 +202,101 @@ class ItemServiceImplTest {
         Assertions.assertThatThrownBy(() -> itemService.addComment(commentRequest, item.getId(), owner.getId()))
                 .isInstanceOf(ValidationException.class);
     }
+
+    @Test
+    void create_shouldFailWhenNameIsNull() {
+        UserDto user = userService.create(userDtoRequest1);
+        ItemDtoRequest invalidItem = new ItemDtoRequest(null, "Description", true, null);
+
+        Assertions.assertThatThrownBy(() -> itemService.create(invalidItem, user.getId()))
+                .isInstanceOf(ValidationException.class);
+    }
+
+    @Test
+    void create_shouldFailWhenDescriptionIsNull() {
+        UserDto user = userService.create(userDtoRequest1);
+        ItemDtoRequest invalidItem = new ItemDtoRequest("Name", null, true, null);
+
+        Assertions.assertThatThrownBy(() -> itemService.create(invalidItem, user.getId()))
+                .isInstanceOf(ValidationException.class);
+    }
+
+    @Test
+    void create_shouldFailWhenAvailableIsNull() {
+        UserDto user = userService.create(userDtoRequest1);
+        ItemDtoRequest invalidItem = new ItemDtoRequest("Name", "Description", null, null);
+
+        Assertions.assertThatThrownBy(() -> itemService.create(invalidItem, user.getId()))
+                .isInstanceOf(ValidationException.class);
+    }
+
+    @Test
+    void findByUserId_shouldReturnItemsWithBookingsAndComments() {
+        UserDto owner = userService.create(userDtoRequest1);
+        UserDto booker = userService.create(userDtoRequest2);
+
+        ItemDtoResponse item = itemService.create(itemDtoRequest1, owner.getId());
+
+        BookingDtoRequest bookingRequest = new BookingDtoRequest(
+                item.getId(),
+                LocalDateTime.now().minusDays(2),
+                LocalDateTime.now().minusDays(1)
+        );
+        bookingService.create(bookingRequest, booker.getId());
+
+        CommentDtoRequest commentRequest = new CommentDtoRequest("Comment 1");
+        itemService.addComment(commentRequest, item.getId(), booker.getId());
+
+        List<ItemDtoResponse> items = itemService.findByUserId(owner.getId());
+
+        Assertions.assertThat(items).hasSize(1);
+        Assertions.assertThat(items.get(0).getComments()).hasSize(1);
+    }
+
+    @Test
+    void search_shouldReturnItemsByName() {
+        UserDto owner = userService.create(userDtoRequest1);
+        itemService.create(new ItemDtoRequest("Hammer", "Steel hammer", true, null), owner.getId());
+
+        List<ItemDtoResponse> results = itemService.search("Hammer");
+
+        Assertions.assertThat(results).isNotEmpty();
+    }
+
+    @Test
+    void search_shouldReturnItemsByDescription() {
+        UserDto owner = userService.create(userDtoRequest1);
+        itemService.create(new ItemDtoRequest("Saw", "Sharp saw", true, null), owner.getId());
+
+        List<ItemDtoResponse> results = itemService.search("Sharp");
+
+        Assertions.assertThat(results).isNotEmpty();
+    }
+
+    @Test
+    void findById_shouldReturnItemWithBookingsWhenBookingsExist() {
+        UserDto owner = userService.create(userDtoRequest1);
+        UserDto booker = userService.create(userDtoRequest2);
+
+        ItemDtoResponse item = itemService.create(itemDtoRequest1, owner.getId());
+
+        BookingDtoRequest pastBooking = new BookingDtoRequest(
+                item.getId(),
+                LocalDateTime.now().minusDays(5),
+                LocalDateTime.now().minusDays(3)
+        );
+        bookingService.create(pastBooking, booker.getId());
+
+        BookingDtoRequest futureBooking = new BookingDtoRequest(
+                item.getId(),
+                LocalDateTime.now().plusDays(1),
+                LocalDateTime.now().plusDays(3)
+        );
+        bookingService.create(futureBooking, booker.getId());
+
+        ItemDtoResponse foundItem = itemService.findById(item.getId(), owner.getId());
+
+        Assertions.assertThat(foundItem.getLastBooking()).isNotNull();
+        Assertions.assertThat(foundItem.getNextBooking()).isNotNull();
+    }
 }

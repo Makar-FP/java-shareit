@@ -179,4 +179,36 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$.authorName").value("name"));
     }
 
+    @Test
+    void create_shouldReturnBadRequest_whenNoUserIdHeader() throws Exception {
+        mvc.perform(post("/items")
+                        .content(mapper.writeValueAsString(itemDtoRequest))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void create_shouldReturnBadRequest_whenInvalidBody() throws Exception {
+        mvc.perform(post("/items")
+                        .content("{ invalid json }")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", userDto.getId()))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void search_shouldReturnEmptyList_whenTextIsEmpty() throws Exception {
+        when(itemService.search("")).thenReturn(List.of());
+
+        mvc.perform(get("/items/search?text=")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+                    String json = result.getResponse().getContentAsString();
+                    List<ItemDtoResponse> dtos = mapper.readValue(json, new TypeReference<>() {});
+                    if (!dtos.isEmpty()) {
+                        throw new AssertionError("Expected empty result when text is empty");
+                    }
+                });
+    }
 }

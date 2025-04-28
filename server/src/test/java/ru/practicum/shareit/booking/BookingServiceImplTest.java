@@ -159,6 +159,22 @@ public class BookingServiceImplTest {
     }
 
     @Test
+    void update_shouldNotApproveIfStatusAlreadySet() {
+        UserDto userDtoResponse1 = userService.create(userDtoRequest1);
+        UserDto userDtoResponse2 = userService.create(userDtoRequest2);
+        ItemDtoResponse itemDtoResponse = itemService.create(itemDtoRequest1, userDtoResponse1.getId());
+        BookingDtoRequest bookingDtoRequest = new BookingDtoRequest(itemDtoResponse.getId(),
+                LocalDateTime.now().plusHours(1), LocalDateTime.now().plusHours(2));
+        BookingDtoResponse bookingDtoResponse = bookingService.create(bookingDtoRequest, userDtoResponse2.getId());
+
+        bookingService.update(bookingDtoResponse.getId(), true, userDtoResponse1.getId());
+
+        Assertions.assertThatThrownBy(() ->
+                        bookingService.update(bookingDtoResponse.getId(), true, userDtoResponse1.getId()))
+                .isInstanceOf(ValidationException.class);
+    }
+
+    @Test
     void findById_shouldFindBookingById() {
         UserDto userDtoResponse1 = userService.create(userDtoRequest1);
         UserDto userDtoResponse2 = userService.create(userDtoRequest2);
